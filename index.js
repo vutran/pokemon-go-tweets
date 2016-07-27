@@ -39,7 +39,7 @@ twitter
                       console.info(reply);
                       twitterClient.post('statuses/update', reply, (err2, replyTweet) => {
                           if (!err2) {
-                            console.info('>>>>>>> REPLIED!');
+                            console.info('------ REPLIED!');
                           }
                       });
                     });
@@ -47,5 +47,11 @@ twitter
             }
           }); // end on stream data
         }); // end twitter stream
-      }); // end then
-  }); // end then
+      })
+      .catch(err => {
+        console.error(err);
+      });
+  })
+  .catch(err => {
+    console.error(err);
+  });

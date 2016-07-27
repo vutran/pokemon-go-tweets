@@ -18,15 +18,19 @@ const findMatching = exports.findMatching = (search) => {
 }
 
 const connect = exports.connect = () => {
-  return new Promise(resolve => {
-    api.init(username, password, {}, provider, err => {
-      resolve(api);
+  return new Promise((resolve, reject) => {
+    api.init(username, password, { type: 'name', name: 'Santa Monica Pier' }, provider, err => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(api);
+      }
     });
   });
 };
 
 const setLocation = exports.setLocation = location => {
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     api.SetLocation(location, (err, newLoc) => {
       if (!err) {
         // get access token
@@ -36,10 +40,16 @@ const setLocation = exports.setLocation = location => {
             api.GetApiEndpoint((err2, endpoint) => {
               if (!err2) {
                 resolve(newLoc);
+              } else {
+                reject(err2);
               }
             });
+          } else {
+            reject(err1);
           }
         });
+      } else {
+        reject(err);
       }
     });
   });
@@ -48,7 +58,7 @@ const setLocation = exports.setLocation = location => {
 const search = exports.search = lcoation => {
   return new Promise(resolve => {
     let t = setInterval(() => {
-      console.info('----> Heartbeat');
+      console.info('------ Heartbeat');
       api.Heartbeat((err2, hb) => {
         // go through cells
         hb.cells.forEach(cell => {
