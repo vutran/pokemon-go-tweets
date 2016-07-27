@@ -24,12 +24,20 @@ const processTweet = ({ twitterClient, tweet }) => new Promise(resolve => {
       .then(newLoc => {
         // search for pokemons!
         pokewatch.search()
-          .then(({ pokemon, distanceInMeters }) => {
-            const reply = {
-              status: `@${tweet.user.screen_name} A ${pokemon.name} is within ${distanceInMeters} meters.`,
+          .then(wilds => {
+            let reply = {
+              status: `@${tweet.user.screen_name} No Pokemon is found at your location.`,
               in_reply_to_status_id: tweet.id_str,
               display_coordinates: true,
             };
+            if (wilds.length) {
+              const wildList = wilds.map(p => p.name).join(', ');
+              reply = {
+                status: `@${tweet.user.screen_name} ${wildList} is available nearby.`,
+                in_reply_to_status_id: tweet.id_str,
+                display_coordinates: true,
+              };
+            }
             try {
               twitterClient.post('statuses/update', reply, err2 => {
                 if (!err2) {

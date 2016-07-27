@@ -19,8 +19,9 @@ const findMatching = exports.findMatching = (search) => {
   return _.intersection(searchArr, getAllPokemon());
 };
 
-const connect = exports.connect = () => new Promise(resolve => {
-  api.init(username, password, { type: 'name', name: 'Santa Monica Pier' }, provider, err => {
+const connect = exports.connect = location => new Promise(resolve => {
+  const loc = location || { type: 'name', name: 'Santa Monica Pier' };
+  api.init(username, password, loc, provider, err => {
     if (!err) {
       resolve(api);
     }
@@ -54,11 +55,21 @@ const search = exports.search = () => new Promise(resolve => {
       if (!err) {
         // go through cells
         hb.cells.forEach(cell => {
-          if (cell.NearbyPokemon.length) {
-            // get the pokemon info
-            const pkmn = getPokemonDetails(cell.NearbyPokemon[0].PokedexNumber);
-            const distanceInMeters = cell.NearbyPokemon[0].DistanceMeters.toString();
-            resolve({ pokemon: pkmn, distanceInMeters });
+          console.log(cell.WildPokemon);
+          if (cell.WildPokemon.length) {
+            const wilds = cell.WildPokemon.map(p => {
+              const pkmn = getPokemonDetails(p.pokemon.PokemonId);
+              return Object.assign({}, pkmn, {
+                location: {
+                  latitude: p.Latitude,
+                  longitude: p.Longitude,
+                },
+                expires_at: p.TimeTillHiddenMs,
+              });
+            });
+            resolve(wilds);
+          } else {
+            resolve([]);
           }
         });
       } else {
