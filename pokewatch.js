@@ -2,6 +2,8 @@ const pokemon = require('pokemon');
 const PokemonGO = require('pokemon-go-node-api');
 const _ = require('lodash');
 
+const SEARCH_TIMEOUT = 2500;
+
 const username = process.env.GOOGLE_USERNAME;
 const password = process.env.GOOGLE_PASSWORD;
 const provider = 'google';
@@ -10,70 +12,64 @@ const api = new PokemonGO.Pokeio();
 const getAllPokemon = exports.getAllPokemon = () => pokemon.all.map(p => p.toLowerCase());
 
 const findMatching = exports.findMatching = (search) => {
-  searchArr = search;
+  let searchArr = search;
   if (typeof search === 'string') {
     searchArr = search.toLowerCase().split(' ');
   }
   return _.intersection(searchArr, getAllPokemon());
-}
-
-const connect = exports.connect = () => {
-  return new Promise((resolve, reject) => {
-    api.init(username, password, { type: 'name', name: 'Santa Monica Pier' }, provider, err => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(api);
-      }
-    });
-  });
 };
 
-const setLocation = exports.setLocation = location => {
-  return new Promise((resolve, reject) => {
-    api.SetLocation(location, (err, newLoc) => {
-      if (!err) {
-        // get access token
-        api.GetAccessToken(username, password, (err1, token) => {
-          if (!err1) {
-            // get endpiont
-            api.GetApiEndpoint((err2, endpoint) => {
-              if (!err2) {
-                resolve(newLoc);
-              } else {
-                reject(err2);
-              }
-            });
-          } else {
-            reject(err1);
-          }
-        });
-      } else {
-        reject(err);
-      }
-    });
+const connect = exports.connect = () => new Promise(resolve => {
+  api.init(username, password, { type: 'name', name: 'Santa Monica Pier' }, provider, err => {
+    if (!err) {
+      resolve(api);
+    }
   });
-};
+});
 
-const search = exports.search = lcoation => {
-  return new Promise(resolve => {
-    let t = setInterval(() => {
-      console.info('------ Heartbeat');
-      api.Heartbeat((err2, hb) => {
-        // go through cells
-        hb.cells.forEach(cell => {
-          if (cell.NearbyPokemon.length) {
-            // get the pokemon info
-            const pokemon = getPokemonDetails(cell.NearbyPokemon[0].PokedexNumber);
-            const distanceInMeters = cell.NearbyPokemon[0].DistanceMeters.toString();
-            // clear interval
-            clearInterval(t);
-            resolve({pokemon, distanceInMeters});
-          }
-        });
+const setLocation = exports.setLocation = location => new Promise(resolve => {
+  api.SetLocation(location, (err1, newLoc) => {
+    if (!err1) {
+      // get access token
+      api.GetAccessToken(username, password, err2 => {
+        if (!err2) {
+          // get endpiont
+          api.GetApiEndpoint(err3 => {
+            if (!err3) {
+              resolve(newLoc);
+            }
+          });
+        }
       });
-    }, 5000);
+    }
   });
-};
+});
 
 const getPokemonDetails = id => api.pokemonlist[parseInt(id, 10) - 1];
+
+const search = exports.search = () => new Promise(resolve => {
+  let t = setInterval(() => {
+    console.info('------ Heartbeat');
+    try {
+      api.Heartbeat((err, hb) => {
+        if (!err) {
+          // go through cells
+          hb.cells.forEach(cell => {
+            if (cell.NearbyPokemon.length) {
+              // get the pokemon info
+              const pkmn = getPokemonDetails(cell.NearbyPokemon[0].PokedexNumber);
+              const distanceInMeters = cell.NearbyPokemon[0].DistanceMeters.toString();
+              // clear interval
+              clearInterval(t);
+              resolve({ pokemon: pkmn, distanceInMeters });
+            }
+          });
+        } else {
+          console.errl('HB ERR:', err);
+        }
+      });
+    } catch (x) {
+      console.error(x);
+    }
+  }, SEARCH_TIMEOUT);
+});
