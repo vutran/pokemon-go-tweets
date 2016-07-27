@@ -15,7 +15,7 @@
     "start": "node index.js"
   },
   "engines": {
-    "node": "5.9.1"
+    "node": "6.x"
   },
   "author": "Vu Tran <vu@vu-tran.com>",
   "license": "MIT"
