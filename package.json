@@ -1,0 +1,22 @@
+{
+  "name": "pgo-tweet",
+  "version": "0.0.0",
+  "description": "> Simple demo that watches geolocated tweets and replies with information on surrounding Pokemon's whereabouts.",
+  "main": "index.js",
+  "dependencies": {
+    "dotenv": "^2.0.0",
+    "lodash": "^4.14.0",
+    "pokemon": "^0.2.0",
+    "pokemon-go-node-api": "^1.4.0",
+    "twitter": "^1.3.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node index.js"
+  },
+  "engines": {
+    "node": "5.9.1"
+  },
+  "author": "Vu Tran <vu@vu-tran.com>",
+  "license": "MIT"
+}
