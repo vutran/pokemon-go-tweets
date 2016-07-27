@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ silent: true });
 const twitter = require('./twitter');
 const pokewatch = require('./pokewatch');
 
