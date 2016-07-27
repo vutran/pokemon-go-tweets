@@ -1,7 +1,7 @@
 {
-  "name": "pgo-tweet",
+  "name": "pokemon-go-tweets",
   "version": "0.0.0",
-  "description": "> Simple demo that watches geolocated tweets and replies with information on surrounding Pokemon's whereabouts.",
+  "description": "Simple demo that watches geolocated tweets and replies with information on surrounding Pokemon's whereabouts.",
   "main": "index.js",
   "dependencies": {
     "async": "^2.0.1",
