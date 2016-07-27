@@ -1,5 +1,10 @@
 const Twitter = require('twitter');
 
+/**
+ * Creates a new Twitter API client
+ *
+ * @return {Promise}
+ */
 exports.connect = () => new Promise(resolve => {
   const client = new Twitter({
     consumer_key: process.env.TWITTER_CONSUMER_ID,

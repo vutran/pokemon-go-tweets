@@ -11,6 +11,14 @@ const api = new PokemonGO.Pokeio();
 
 const getAllPokemon = exports.getAllPokemon = () => pokemon.all.map(p => p.toLowerCase());
 
+const getPokemonDetails = id => api.pokemonlist[parseInt(id, 10) - 1];
+
+/**
+ * Finds matching pokemon from input array by name
+ *
+ * @param {String|Array} search - A single Pokemon name or an array of names
+ * @return {Array}
+ */
 const findMatching = exports.findMatching = (search) => {
   let searchArr = search;
   if (typeof search === 'string') {
@@ -19,6 +27,12 @@ const findMatching = exports.findMatching = (search) => {
   return _.intersection(searchArr, getAllPokemon());
 };
 
+/**
+ * Connects to the PGO API
+ *
+ * @param {Object} location - Optional location object
+ * @return {Promise}
+ */
 const connect = exports.connect = location => new Promise(resolve => {
   const loc = location || { type: 'name', name: 'Santa Monica Pier' };
   api.init(username, password, loc, provider, err => {
@@ -28,6 +42,12 @@ const connect = exports.connect = location => new Promise(resolve => {
   });
 });
 
+/**
+ * Sets the current logged in user's location
+ *
+ * @param {Object} location - The new location
+ * @return {Promise}
+ */
 const setLocation = exports.setLocation = location => new Promise(resolve => {
   api.SetLocation(location, (err1, newLoc) => {
     if (!err1) {
@@ -46,8 +66,11 @@ const setLocation = exports.setLocation = location => new Promise(resolve => {
   });
 });
 
-const getPokemonDetails = id => api.pokemonlist[parseInt(id, 10) - 1];
-
+/**
+ * Searches for wild pokemon in the area
+ *
+ * @return {Promise}
+ */
 const search = exports.search = () => new Promise(resolve => {
   console.info('------ Heartbeat');
   try {
@@ -55,7 +78,6 @@ const search = exports.search = () => new Promise(resolve => {
       if (!err) {
         // go through cells
         hb.cells.forEach(cell => {
-          console.log(cell.WildPokemon);
           if (cell.WildPokemon.length) {
             const wilds = cell.WildPokemon.map(p => {
               const pkmn = getPokemonDetails(p.pokemon.PokemonId);
@@ -73,7 +95,7 @@ const search = exports.search = () => new Promise(resolve => {
           }
         });
       } else {
-        console.errl('HB ERR:', err);
+        console.error('HB ERR:', err);
       }
     });
   } catch (x) {
