@@ -48,28 +48,24 @@ const setLocation = exports.setLocation = location => new Promise(resolve => {
 const getPokemonDetails = id => api.pokemonlist[parseInt(id, 10) - 1];
 
 const search = exports.search = () => new Promise(resolve => {
-  let t = setInterval(() => {
-    console.info('------ Heartbeat');
-    try {
-      api.Heartbeat((err, hb) => {
-        if (!err) {
-          // go through cells
-          hb.cells.forEach(cell => {
-            if (cell.NearbyPokemon.length) {
-              // get the pokemon info
-              const pkmn = getPokemonDetails(cell.NearbyPokemon[0].PokedexNumber);
-              const distanceInMeters = cell.NearbyPokemon[0].DistanceMeters.toString();
-              // clear interval
-              clearInterval(t);
-              resolve({ pokemon: pkmn, distanceInMeters });
-            }
-          });
-        } else {
-          console.errl('HB ERR:', err);
-        }
-      });
-    } catch (x) {
-      console.error(x);
-    }
-  }, SEARCH_TIMEOUT);
+  console.info('------ Heartbeat');
+  try {
+    api.Heartbeat((err, hb) => {
+      if (!err) {
+        // go through cells
+        hb.cells.forEach(cell => {
+          if (cell.NearbyPokemon.length) {
+            // get the pokemon info
+            const pkmn = getPokemonDetails(cell.NearbyPokemon[0].PokedexNumber);
+            const distanceInMeters = cell.NearbyPokemon[0].DistanceMeters.toString();
+            resolve({ pokemon: pkmn, distanceInMeters });
+          }
+        });
+      } else {
+        console.errl('HB ERR:', err);
+      }
+    });
+  } catch (x) {
+    console.error(x);
+  }
 });
