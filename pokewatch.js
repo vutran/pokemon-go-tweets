@@ -76,24 +76,38 @@ const search = exports.search = () => new Promise(resolve => {
   try {
     api.Heartbeat((err, hb) => {
       if (!err) {
-        // go through cells
+        let wilds = [];
+        let nearby = [];
+        // find all wild and nearby
         hb.cells.forEach(cell => {
           if (cell.WildPokemon.length) {
-            const wilds = cell.WildPokemon.map(p => {
-              const pkmn = getPokemonDetails(p.pokemon.PokemonId);
-              return Object.assign({}, pkmn, {
-                location: {
-                  latitude: p.Latitude,
-                  longitude: p.Longitude,
-                },
-                expires_at: p.TimeTillHiddenMs,
-              });
-            });
-            resolve(wilds);
-          } else {
-            resolve([]);
+            wilds = cell.WildPokemon.map(p => parseInt(p.pokemon.PokemonId, 10));
+          }
+          if (cell.NearbyPokemon.length) {
+            nearby = cell.NearbyPokemon.map(p => parseInt(p.PokedexNumber, 10));
           }
         });
+        const all = _.union(wilds, nearby);
+        if (all.length) {
+          const allData = all
+            .filter(p => _.isNumber(p))
+            .map(p => {
+              const pkmn = getPokemonDetails(p);
+              if (pkmn && pkmn.id) {
+                return Object.assign({}, pkmn, {
+                  location: {
+                    latitude: p.Latitude,
+                    longitude: p.Longitude,
+                  },
+                  expires_at: p.TimeTillHiddenMs,
+                });
+              }
+              return false;
+            });
+          resolve(allData);
+        } else {
+          resolve([]);
+        }
       } else {
         console.error('HB ERR:', err);
       }
