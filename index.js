@@ -5,7 +5,9 @@ const pokewatch = require('./pokewatch');
 
 const NUM_WORKERS = 1;
 
-const processTweet = ({ twitterClient, tweet }) => new Promise(resolve => {
+const ERR_NO_LOCATION = 100;
+
+const processTweet = ({ twitterClient, tweet }) => new Promise((resolve, reject) => {
   let coords = false;
   if (tweet.coordinates && tweet.coordinates.type === 'Point') {
     coords = tweet.coordinates.coordinates;
@@ -54,14 +56,39 @@ const processTweet = ({ twitterClient, tweet }) => new Promise(resolve => {
         console.error('SEARCH ERR', err);
       });
   } else {
-    resolve();
+    reject({
+      code: ERR_NO_LOCATION,
+      twitterClient,
+      tweet,
+    });
   }
 });
 
 const q = async.queue((payload, callback) => {
-  processTweet(payload).then(() => {
-    callback();
-  });
+  processTweet(payload)
+    .then(() => {
+      callback();
+    })
+    .catch(err => {
+      switch (err.code) {
+        case ERR_NO_LOCATION: {
+          const reply = {
+            status: `@${err.tweet.user.screen_name} Please enable location in your tweet.`,
+            in_reply_to_status_id: err.tweet.id_str,
+          };
+          err.twitterClient.post('statuses/update', reply, err2 => {
+            if (!err2) {
+              console.info('------ REPLIED! (NO LOCATION)');
+              callback();
+            }
+          });
+          break;
+        }
+        default:
+          callback();
+          break;
+      }
+    });
 }, NUM_WORKERS);
 
 // assign a callback
