@@ -1,6 +1,6 @@
-const pokemon = require('pokemon');
 const PokemonGO = require('pokemon-go-node-api');
 const _ = require('lodash');
+const pokemon = require('./data/pokemon');
 
 const SEARCH_TIMEOUT = 2500;
 
@@ -9,23 +9,7 @@ const password = process.env.GOOGLE_PASSWORD;
 const provider = 'google';
 const api = new PokemonGO.Pokeio();
 
-const getAllPokemon = exports.getAllPokemon = () => pokemon.all.map(p => p.toLowerCase());
-
 const getPokemonDetails = id => api.pokemonlist[parseInt(id, 10) - 1];
-
-/**
- * Finds matching pokemon from input array by name
- *
- * @param {String|Array} search - A single Pokemon name or an array of names
- * @return {Array}
- */
-const findMatching = exports.findMatching = (search) => {
-  let searchArr = search;
-  if (typeof search === 'string') {
-    searchArr = search.toLowerCase().split(' ');
-  }
-  return _.intersection(searchArr, getAllPokemon());
-};
 
 /**
  * Connects to the PGO API

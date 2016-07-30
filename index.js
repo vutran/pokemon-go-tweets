@@ -2,6 +2,8 @@ require('dotenv').config({ silent: true });
 const async = require('async');
 const twitter = require('./twitter');
 const pokewatch = require('./pokewatch');
+const pokemon = require('./data/pokemon');
+const hotspots = require('./data/hotspots');
 
 const NUM_WORKERS = 1;
 
@@ -96,33 +98,97 @@ q.drain = () => {
   console.log('------ QUEUE IS DRAINED!');
 };
 
-// start the flow
-twitter
-  .connect()
-  .then(twitterClient => {
-    pokewatch
+let watchIndex = -1;
+
+const runServer = next => {
+  setTimeout(() => {
+    watchIndex++;
+    if (watchIndex >= hotspots.length) {
+      watchIndex = 0;
+    }
+    console.log('--- RUNNING WATCHER', watchIndex);
+    const spot = hotspots[watchIndex];
+    const loc = {
+      type: 'coords',
+      coords: {
+        latitude: spot.coords[0],
+        longitude: spot.coords[1],
+      },
+    };
+    // process a tweet
+    twitter
       .connect()
-      .then(() => {
-        console.log('------ LISTEN FOR TWEETS');
-        try {
-          // listen for the hashtags
-          twitterClient.stream('statuses/filter', { track: process.env.TWITTER_TRACK_TERM }, stream => {
-            stream
-              .on('data', tweet => {
-                q.push({ twitterClient, tweet });
-              })
-              .on('error', err => {
-                console.error(err);
+      .then(twitterClient => {
+        pokewatch
+          .connect(loc)
+          .then(() => {
+            // search for pokemons!
+            pokewatch
+              .search()
+              .then(found => {
+                const foundStr = found
+                  .map(p => parseInt(p.id, 10))
+                  .filter(id => {
+                    const raresLower = pokemon.getRares().map(n => pokemon.getId(n));
+                    return raresLower.indexOf(id) > -1;
+                  })
+                  .map(id => pokemon.getName(id))
+                  .join(', ');
+                if (foundStr.length) {
+                  const tweet = {
+                    status: `${foundStr} is roaming around ${spot.name}.`,
+                    display_coordinates: true,
+                    geo: {
+                      type: 'Point',
+                      lat: spot.coords[0],
+                      long: spot.coords[1],
+                      display_coordinates: true,
+                    },
+                  };
+                  twitterClient.post('statuses/update', tweet, err => {
+                    console.log(tweet);
+                    next();
+                  });
+                } else {
+                  next();
+                }
               });
-          }); // end twitter stream
-        } catch (err) {
-          console.error(err);
-        }
-      })
-      .catch(err => {
-        console.error(err);
+          });
       });
-  })
-  .catch(err => {
-    console.error(err);
-  });
+  }, 1000 * 60 * 5);
+};
+
+async.forever(runServer, err => {
+  console.error('SERVER ERROR:', err.message);
+});
+
+// start the flow
+// twitter
+//   .connect()
+//   .then(twitterClient => {
+//     pokewatch
+//       .connect()
+//       .then(() => {
+//         console.log('------ LISTEN FOR TWEETS');
+//         try {
+//           // listen for the hashtags
+//           twitterClient.stream('statuses/filter', { track: process.env.TWITTER_TRACK_TERM }, stream => {
+//             stream
+//               .on('data', tweet => {
+//                 q.push({ twitterClient, tweet });
+//               })
+//               .on('error', err => {
+//                 console.error(err);
+//               });
+//           }); // end twitter stream
+//         } catch (err) {
+//           console.error(err);
+//         }
+//       })
+//       .catch(err => {
+//         console.error(err);
+//       });
+//   })
+//   .catch(err => {
+//     console.error(err);
+//   });
