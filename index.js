@@ -163,32 +163,32 @@ async.forever(runServer, err => {
 });
 
 // start the flow
-// twitter
-//   .connect()
-//   .then(twitterClient => {
-//     pokewatch
-//       .connect()
-//       .then(() => {
-//         console.log('------ LISTEN FOR TWEETS');
-//         try {
-//           // listen for the hashtags
-//           twitterClient.stream('statuses/filter', { track: process.env.TWITTER_TRACK_TERM }, stream => {
-//             stream
-//               .on('data', tweet => {
-//                 q.push({ twitterClient, tweet });
-//               })
-//               .on('error', err => {
-//                 console.error(err);
-//               });
-//           }); // end twitter stream
-//         } catch (err) {
-//           console.error(err);
-//         }
-//       })
-//       .catch(err => {
-//         console.error(err);
-//       });
-//   })
-//   .catch(err => {
-//     console.error(err);
-//   });
+twitter
+  .connect()
+  .then(twitterClient => {
+    pokewatch
+      .connect()
+      .then(() => {
+        console.log('------ LISTEN FOR TWEETS');
+        try {
+          // listen for the hashtags
+          twitterClient.stream('statuses/filter', { track: process.env.TWITTER_TRACK_TERM }, stream => {
+            stream
+              .on('data', tweet => {
+                q.push({ twitterClient, tweet });
+              })
+              .on('error', err => {
+                console.error(err);
+              });
+          }); // end twitter stream
+        } catch (err) {
+          console.error(err);
+        }
+      })
+      .catch(err => {
+        console.error(err);
+      });
+  })
+  .catch(err => {
+    console.error(err);
+  });
