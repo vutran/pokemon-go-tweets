@@ -11,7 +11,7 @@ exports.PGO_PROVIDER = 'google';
 // App Configurations
 exports.NUM_WORKERS = 1;
 exports.SEARCH_TIMEOUT = 2500;
-exports.DEFAULT_LOCATION = { type: 'name', name: 'Santa Monica Pier' };
+exports.DEFAULT_LOCATION = { type: 'name', name: 'Santa Monica Pier, CA' };
 exports.SCANNER_INTERVAL = 1000 * 60 * 5;
 
 // Error Codes
