@@ -17,3 +17,4 @@ exports.SCANNER_INTERVAL = 1000 * 60 * 5;
 // Error Codes
 exports.ERROR_NO_LOCATION = 100;
 exports.ERROR_NO_FOUND_POKEMON = 200;
+exports.ERROR_IGNORE_REPLIES = 300;

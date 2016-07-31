@@ -71,13 +71,22 @@ const getLocation = exports.getLocation = tweet => {
 };
 
 /**
- * Takes an incoming tweet and processes it
+ * Takes an incoming tweet and processes it and returns a Promise
+ *
+ * If the location doesn't exist in the tweet, the Promise is rejected
+ * If there are no Pokemon found at the location, the Promise is rejected
  *
  * @param {Object} tweet
  * @return Promise
  */
 const process = exports.process = tweet => new Promise((resolve, reject) => {
   const location = getLocation(tweet);
+  if (tweet.in_reply_to_status_id) {
+    // skip replies as this causes an infinite loop if the bot and tweeter is
+    // of the same username because the bot will reply to the tweeter and
+    // gets caught again by the stream.
+    reject(createError(constants.ERROR_IGNORE_REPLIES, tweet));
+  }
   if (!location) {
     reject(createError(constants.ERROR_NO_LOCATION, tweet));
   } else {
