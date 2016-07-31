@@ -62,8 +62,8 @@ const getLocation = exports.getLocation = tweet => {
     return {
       type: 'coords',
       coords: {
-        longitude: coords[0],
         latitude: coords[1],
+        longitude: coords[0],
       },
     };
   }
