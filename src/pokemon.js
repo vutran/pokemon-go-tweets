@@ -39,6 +39,26 @@ const getMatching = exports.getMatching = (search) => {
 };
 
 /**
+ * Given a string value, return a list of matching Pokemon
+ *
+ * @param {String} value
+ * @return {String[]}
+ */
+const findPokemonInString = exports.findPokemonInString = value => {
+  const values = value.split(' ');
+  const found = [];
+  values.forEach(name => {
+    const nameFound = getMatching(name);
+    if (nameFound.length) {
+      nameFound.forEach(n => {
+        found.push(n);
+      });
+    }
+  });
+  return found;
+};
+
+/**
  * Return an array of (subjectively) rare Pokemons
  *
  * @return {Array}
