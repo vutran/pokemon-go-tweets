@@ -86,8 +86,7 @@ const process = exports.process = tweet => new Promise((resolve, reject) => {
     // of the same username because the bot will reply to the tweeter and
     // gets caught again by the stream.
     reject(createError(constants.ERROR_IGNORE_REPLIES, tweet));
-  }
-  if (!location) {
+  } else if (!location) {
     reject(createError(constants.ERROR_NO_LOCATION, tweet));
   } else {
     pgo.search(location)
