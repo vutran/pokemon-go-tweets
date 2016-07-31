@@ -48,6 +48,7 @@ const createError = exports.createError = (code, tweet) => ({ code, tweet });
 /**
  * Given a tweet, retrieve it's coordinates if available
  *
+ * @see http://geojson.org/
  * @param {Object} tweet
  * @return {Boolean|Object}
  */
