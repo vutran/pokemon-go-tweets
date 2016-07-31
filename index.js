@@ -9,10 +9,11 @@ const hotspots = require('./data/hotspots');
 
 const q = async.queue((tweet, next) => {
   bot.process(tweet)
-    .then(next)
-    .catch(err => {
-      bot.handleErrors(err, next);
-    });
+    .then(
+      next,
+      err => {
+        bot.handleErrors(err, next);
+      });
 }, constants.NUM_WORKERS);
 
 // assign a callback

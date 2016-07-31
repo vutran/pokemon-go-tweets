@@ -117,30 +117,32 @@ const processScanner = exports.processScanner = (location, next) => {
   setTimeout(() => {
     console.log('processing', location);
     pgo.search(location)
-      .then(found => {
-        const rarePokemons = found.map(p => p.name).filter(p => pokemon.isRare(p));
-        if (rarePokemons.length) {
-          const reply = {
-            status: `${rarePokemons.join(', ')} is roaming aroun ${location.name}`,
-            display_coordinates: true,
-            geo: {
-              type: 'Point',
-              lat: location.coords.latitude,
-              long: location.coords.longitude,
+      .then(
+        found => {
+          const rarePokemons = found.map(p => p.name).filter(p => pokemon.isRare(p));
+          if (rarePokemons.length) {
+            const reply = {
+              status: `${rarePokemons.join(', ')} is roaming aroun ${location.name}`,
               display_coordinates: true,
-            },
-          };
-          twitter.post(reply)
-            .then(() => {
-              next();
-            });
-        } else {
+              geo: {
+                type: 'Point',
+                lat: location.coords.latitude,
+                long: location.coords.longitude,
+                display_coordinates: true,
+              },
+            };
+            twitter.post(reply)
+              .then(() => {
+                next();
+              });
+          } else {
+            next();
+          }
+        },
+        () => {
           next();
         }
-      })
-      .catch(() => {
-        next();
-      });
+      );
   }, constants.SCANNER_INTERVAL);
 };
 
