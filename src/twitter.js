@@ -44,6 +44,7 @@ const listen = exports.listen = (track, callback) => {
   */
 const post = exports.post = tweet => new Promise(resolve => {
   api.post('statuses/update', tweet, () => {
+    console.log('TWEET:', tweet);
     resolve(tweet);
   });
 });
